@@ -1,0 +1,60 @@
+name = The Company Responsive Theme
+description = The company theme is a responsive theme its perfect for all sorts of corporate and small business websites: for support <b>info@zymphonies.com, www.zymphonies.com</b>
+core = 7.x
+
+engine = phptemplate
+
+stylesheets[all][] = css/style.css
+stylesheets[all][] = css/media.css
+
+scripts[] = js/jquery-1.10.2.min.js
+scripts[] = js/jquery-ui.js
+scripts[] = js/jquery-ui.min.js
+scripts[] = js/custom.js
+
+regions[top_nav]      	= Top Nav
+regions[search]     	= Search
+regions[sidebar_first]  = First Sidebar
+regions[sidebar_second] = Second Sidebar
+regions[slideshow]      = Slideshow
+regions[front_welcome]  = Front Welcome
+regions[top_first]      = First top
+regions[top_second]     = Second top
+regions[top_third]      = Third top
+regions[footer_first]   = First Bottom
+regions[footer_second]  = Second Bottom
+regions[footer_third]   = Third Bottom
+regions[footer_forth]   = Forth Bottom
+regions[content]        = Content
+regions[footer]         = Footer
+
+features[] = logo
+features[] = name
+features[] = slogan
+features[] = node_user_picture
+features[] = comment_user_picture
+features[] = comment_user_verification
+features[] = favicon
+features[] = main_menu
+features[] = secondary_menu
+
+settings[breadcrumbs]  = 1
+settings[social_links]  = 1
+
+settings[twitter_url] = "http://twitter.com/shanidkv/"
+settings[facebook_url] = "http://facebook.com/shanidkv/"
+settings[gplus_url] = "http://google.com"
+settings[linkedin_url] = "http://in.linkedin.com/in/shanidkv"
+settings[dribbble_url] = "http://dribbble.com"
+settings[vimeo_url] = "http://vimeo.com"
+settings[youtube_url] = "http://youtube.com"
+
+
+
+
+; Information added by Drupal.org packaging script on 2014-04-07
+version = "7.x-1.0"
+core = "7.x"
+project = "thecompany-responsive-theme"
+datestamp = "1396890854"
+

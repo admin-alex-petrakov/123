@@ -1,0 +1,205 @@
+@media screen and (max-width: 1152px) {
+
+  #wrapper { max-width:960px; }
+
+  #top-area .column:last-child{ margin-right: 0; }
+  
+  #copyright{ padding: 0 3%; }
+}
+
+@media screen and (max-width: 960px) {
+
+  #main-menu a{ padding: 13px 17px; }
+
+  .content-sidebar-wrap,
+  #content, #sidebar-first,
+  #sidebar-second {
+    float:none;
+    width:100% !important;
+  }
+  
+  #sidebar-first { clear:both; }
+  
+  #sidebar-first,
+  #sidebar-second,
+  #head, #foot {
+    padding:0 3.52%;
+  }
+}
+
+@media screen and (max-width: 640px) {
+
+  #logo, #site-title{ float: none; text-align: center; overflow: hidden; }
+
+  #logo{ margin: 10px 0 5px 0; }
+
+  #site-description, #site-title a{ float: none; }
+
+  #site-title{ margin-bottom: 15px; }
+
+  #inner_header_wrapper{ margin: 0; }
+
+  #copyright{ padding: 0 3.52%;}
+
+  body { margin-top: 0; }
+
+  .front .content-sidebar-wrap{ margin: 0; }
+
+  .region-top-nav .block-menu{ width: 100%; }
+
+  .region-top-nav ul.menu{ text-align: center; }
+
+  #main-menu ul { display:none; }
+  
+  #main-menu li ul { position:static; border: 0; }
+  
+  #main-menu li ul ul { margin:0 !important; border: 0; }
+  
+  #main-menu ul,
+  #main-menu li { float:none; width:100%; }
+
+  #main-menu{ border:0; }
+  
+  #main-menu a {
+    width:100%;
+    padding:10px 0;
+    background: #ebebeb;
+    color: #9c9c9c;
+    border-bottom: 1px solid #fff;
+    border: 1px solid #fff;
+  }
+
+  #main-menu a:hover, #main-menu li a.active{
+    color: #fff;
+    text-decoration: none;
+    background-color: #E84646;
+    border-top: 1px solid white;
+  }
+
+  #main-menu li:hover > a, #main-menu li > a.active{
+    border-top: 1px solid white;
+  }
+
+  #main-menu li li a {
+    color: #9C9C9C;
+    background: #fff;
+  }
+
+  #main-menu li li a { text-align:center; }
+  
+  #main-menu li:hover > ul,
+  #main-menu li li:hover > ul,
+  #main-menu li li li:hover > ul {
+    display:none;
+  }
+  
+  .drop-down-toggle { display:block; }
+  
+  #main-menu li li .drop-down-toggle { top:5px; }
+
+  #main-menu .nav-toggle {
+    display: block;
+    font-size: 15px;
+    background: url(../images/mobile-menu.png) #E84646 center no-repeat;
+    background-position-x: 11px;
+    color: white;
+  }
+
+  .header_left, .header_right{ width: 100%; margin: 0; }
+
+  #block-search-form{ width: 220px; margin: 0 auto; }
+
+  #copyright p{ margin: 10px 0; }
+
+
+  /*testimonials*/
+
+  .view-testimonials img{ width: 100px; }
+
+  #top-area{ margin: 0; }
+
+  .content-sidebar-wrap,
+  #sidebar-first,
+  #sidebar-second {
+    float:none;
+    width:auto;
+  }
+
+  .content-sidebar-wrap #content {
+    float: left;
+    width:auto;
+  }
+  
+  #sidebar-first .block,
+  #sidebar-second .block,
+  #footer-area .column,
+  #top-area .column {
+    float:none;
+    width:auto !important;
+    margin-left:0;
+  }
+  
+  #sidebar-first {
+    clear:both;
+  }
+  
+  #footer-area .column,
+  #top-area .column {
+    margin: 0 10px;
+    padding: 0;
+  }
+  #top-area .column:first-child,
+  #footer-area .column:first-child{
+    margin: 10px;
+  }
+  
+  .copyright,
+  .credits {
+    float:none;
+    text-align:left;
+  }
+
+  .nivo-caption{ display: none !important; }
+
+  .view-gallery .views-row{ width: 28%; margin: 2%; }
+
+  .view-gallery .figcaption a.colorbox {
+    background-position: -7px -6px;
+    right: 31px;
+  }
+
+  .view-gallery .figcaption a {
+    height: 30px;
+    width: 30px;
+    background-position: -47px -5px;
+  }
+
+}
+
+@media screen and (max-width: 440px) {
+
+  .view-testimonials img { width: 69px; }
+
+  .testimonial-details{ display: block; padding: 6px 1px; font-size: 14px; }
+
+  .testimonial-details p{ margin-bottom: 10px; }
+
+  .view-testimonials .more a{ padding: 6px; }
+
+  input.form-text, select.form-select { width: 93%; }
+
+  textarea.form-textarea { width: 100% }
+
+  .block > h2 { font-size: 18px; }
+
+  #top-area h2{ font-size: 14px; }
+
+  #copyright{ padding: 0 3.52%; }
+
+  #header{ padding-top: 15px; }
+
+  .menu_wrapper{ margin-top: 10px; }
+
+  .node{ margin-top: 5px; }
+
+}
