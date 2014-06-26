@@ -1,0 +1,16 @@
+name = Commerce (Product Display Manager)
+description = Simplifies managing the relationship between products and product display nodes.
+package = Commerce (contrib)
+core = 7.x
+
+files[] = commerce_pdm.admin.inc
+
+dependencies[] = commerce
+dependencies[] = commerce_product_ui
+
+; Information added by drupal.org packaging script on 2013-03-26
+version = "7.x-1.0-alpha4"
+core = "7.x"
+project = "commerce_product_display_manager"
+datestamp = "1364328611"
+

@@ -150,7 +150,7 @@ body {
   width: auto;
 }
 body, input, textarea {
-  color: rgb(114, 111, 111);
+  color: #fff;
   font: 15px "Helvetica Neue", Helvetica, Arial, sans-serif;
   font-weight: 300;  
 }
@@ -165,7 +165,7 @@ body {
   box-shadow: 0px 0px 4px 0px rgba(0, 0, 0, 0.2);
 }
 a {
-  color: #1982d1;
+  color: #cc0202;
   text-decoration: none;
 }
 a:focus,
@@ -305,9 +305,9 @@ sub {
 table {
   margin: 0 0 1.5em;
   width: 100%;
-  border:1px solid #ddd;
+  border:1px solid #000000;
   border-right:none;
-  background:#fff;
+  background:#000000;
 }
 
 th {
@@ -323,8 +323,8 @@ tr{
 
 td{
   padding:5px 10px;
-  border-top:1px solid #ddd;
-  border-right:1px solid #ddd;
+  border-top:1px solid #000000;
+  border-right:1px solid #000000;
 }
 
 /* clearfix hack */

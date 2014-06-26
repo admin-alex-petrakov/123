@@ -1,0 +1,60 @@
+/**
+ *  The long names are created by the $form['#tree'] property.
+ */
+
+#commerce_pdm_product_referenced_by {
+  margin-top: 10px;
+}
+
+#commerce_pdm_product_referenced_by .hidden {
+  display: none !important;
+}
+
+#commerce_pdm_product_referenced_by div.commerce-pdm-product-form-reference-add-links {
+  font-weight: bold !important;
+}
+
+#commerce_pdm_product_referenced_by tr.add-new {
+  border-top: 1px solid black;
+}
+
+#commerce_pdm_product_referenced_by
+div.commerce-pdm-product-form-reference-add-actions
+div.actions div.form-item,
+#commerce_pdm_product_referenced_by div.commerce-pdm-product-form-reference-add-links,
+#commerce_pdm_product_referenced_by #edit-quick-reference-add-new-reference-actions-commerce-pdm-product-display-cancel,
+#edit-quick-reference-add-new-reference-actions-commerce-pdm-product-display-add,
+#commerce_pdm_product_referenced_by tr.add-new label {
+  float: left;
+}
+
+
+#commerce_pdm_product_referenced_by tr.add-new label {
+  margin-right: 5px;
+}
+
+div.form-item-quick-reference-add-new-reference-actions-commerce-pdm-product-display-title,
+#edit-quick-reference-add-new-reference-actions-commerce-pdm-product-display-cancel,
+#edit-quick-reference-add-new-reference-actions-commerce-pdm-product-display-add {
+  margin-left: 15px !important;
+}
+
+#commerce_pdm_product_referenced_by tr.deleted input {
+  text-decoration: line-through;
+  opacity: 0.5;
+}
+
+#commerce_pdm_product_referenced_by div.commerce-pdm-product-form-reference-error-message {
+  float: left;
+  margin-left: 15px !important;
+}
+
+/**
+ * Make it look like regular text.
+ */
+#commerce_pdm_product_referenced_by input.commerce-pdm-reference-title,
+#commerce_pdm_product_referenced_by input.commerce-pdm-reference-nid {
+  border: 0 !important;
+  background-color: transparent !important;
+  color: inherit !important;
+}

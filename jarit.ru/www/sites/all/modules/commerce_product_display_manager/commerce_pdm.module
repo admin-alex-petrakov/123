@@ -1,0 +1,800 @@
+<?php
+
+/**
+ *  Implements hook_permission();
+ */
+function commerce_pdm_permission() {
+  return array(
+    'access product display manager' => array(
+      'title' => t('Access the product display manager.'),
+    ),
+  );
+}
+
+/**
+ * Implements hook_menu().
+ */
+function commerce_pdm_menu() {
+
+  $items = array(
+    'node/%node/products' => array(
+      'title' => t('Products'),
+      'type' => MENU_LOCAL_TASK,
+      'page callback' => 'drupal_get_form',
+      'page arguments' => array('commerce_pdm_display_node_products_form', 1),
+      'access callback' => 'commerce_pdm_access_products_tab',
+      'access arguments' => array(1),
+    ),
+    'admin/commerce/products/display_manager' => array(
+      'title' => t('Display manager'),
+      'type' => MENU_LOCAL_TASK,
+      'page callback' => 'commerce_pdm_product_display_manager_page',
+      'access arguments' => array('access product display manager'),
+      'file' => 'commerce_pdm.admin.inc',
+    ),
+    'commerce_pqr/autocomplete' => array(
+      'title' => 'Autocomplete for existing display nodes',
+      'page callback' => '_commerce_pdm_existing_displays_autocomplete',
+      'access arguments' => array('access content'),
+      'type' => MENU_CALLBACK,
+    ),
+    // Ajax callback path for returning info about a node.
+    'commerce_pdm/get_node_info/%' => array(
+      'page callback' => '_commerce_pdm_get_node_info',
+      'page arguments' => array(2),
+      'access arguments' => array('access content'),  // ToDo: Checkup permission
+      'type' => MENU_CALLBACK,
+    ),
+  );
+
+  // Create clone callbacks. These products based on other products in the same
+  // Product Display, prepopulating the values of the base product.
+  foreach (commerce_product_types() as $type => $product_type) {
+    $items['admin/commerce/products/clone/' . strtr($type, array('_' => '-')) . '/%commerce_product'] = array(
+      'title' => 'Create @name',
+      'title arguments' => array('@name' => $product_type['name']),
+      'description' => $product_type['description'],
+      'page callback' => 'commerce_pdm_product_ui_product_form_wrapper',
+      'page arguments' => array(commerce_product_new($type), 5),
+      'access callback' => 'commerce_product_access',
+      'access arguments' => array('create', $type),
+      'file' => 'commerce_pdm_product_clone.inc',
+    );
+  }
+
+  return $items;
+}
+
+/**
+ *  Implements hook_help().
+ */
+function commerce_pdm_help($path, $args) {
+  if ($path == 'admin/commerce/products/display_manager') {
+    return t('Drag products into display nodes as desired.', array());
+  }
+}
+
+/**
+ * Implements hook_theme().
+ */
+function commerce_pdm_theme($existing, $type, $theme, $path) {
+  return array(
+    'commerce_pdm_display_node_products_table' => array(
+      'render element' => 'form',
+    ),
+    'commerce_pdm_product_display_manager_table' => array(
+      'render element' => 'form',
+      'file' => 'commerce_pdm.admin.inc',
+    ),
+    'commerce_pdm_product_references_table' => array(
+      'render element' => 'form_elements',
+    ),
+  );
+}
+
+/**
+ * Checks if the node is a products display node and that user has access to it.
+ */
+function commerce_pdm_access_products_tab($node) {
+  return user_access('access product display manager') && _commerce_pdm_get_node_reference_field_name($node) !== FALSE;
+}
+
+/**
+ * Return a form in the shape of a table listing all products referenced by this node.
+ */
+function commerce_pdm_display_node_products_form($form, &$form_state, $node) {
+  $form = array();
+
+  $reference_field_name = _commerce_pdm_get_node_reference_field_name($node);
+  $items = field_get_items('node', $node, $reference_field_name);
+  if (!empty($items)) {
+    foreach ($items as $item) {
+      $products_query = db_select('commerce_product', 'cp');
+      $products_query->fields('cp', array('product_id', 'sku', 'title'));
+      $products_query->condition('cp.product_id', $item['product_id']);
+      $product_data = $products_query->execute()->fetch();
+
+      $form[] = array(
+        'sku' => array(
+          '#type' => 'item',
+          '#markup' => $product_data->sku,
+          //'#href' => 'admin/commerce/products/' . $product_data->product_id,
+        ),
+        'title' => array(
+          '#type' => 'item',
+          '#markup' => $product_data->title,
+        ),
+        'edit' => array(
+          '#type' => 'link',
+          '#href' => 'admin/commerce/products/' . $product_data->product_id . '/edit',
+          '#title' => t('Edit'),
+        ),
+      );
+    }
+
+    $form['#theme'] = 'commerce_pdm_display_node_products_table';
+  }
+  else {
+    $form['no_products'] = array(
+      '#markup' => t('This product display node is currently not referencing any products'),
+    );
+  }
+
+  return $form;
+}
+
+/**
+ * Creates a table out of commerce_pdm_display_node_products_form.
+ */
+function theme_commerce_pdm_display_node_products_table($variables) {
+  $form = $variables['form'];
+  $header = array('SKU', 'Title', 'Edit');
+  $rows = array();
+
+  foreach (element_children($form) as $row_key) {
+    if (is_numeric($row_key)) {
+      $row_data = $form[$row_key];
+      $row = array();
+      $row[] = drupal_render($row_data['sku']);
+      $row[] = drupal_render($row_data['title']);
+      $row[] = drupal_render($row_data['edit']);
+      $rows[] = array('data' => $row);
+    }
+  }
+
+  $output = theme('table', array('header' => $header, 'rows' => $rows, 'attributes' => array('id' => 'commerce_pdm_display_node_products_table')));
+  return $output;
+}
+
+/**
+ * Implements hook_form_FORM_ID_alter().
+ *
+ * Adding inputs to specify a default setting to use for product referencing
+ * whenever a product with this specific type is being created.
+ */
+function commerce_pdm_form_commerce_product_ui_product_type_form_alter(&$form, &$form_state, $form_id) {
+
+  $product_type_machine = $form_state['product_type']['type'];
+
+  // Need to save this for later, the source is gone at submission.
+  // If the type is about to be created, this value exists in the submit function.
+  $form_state['#product_display_type_machine'] = $product_type_machine;
+  $default_type_new = variable_get('commerce_pdm_default_new_' . $product_type_machine, '');
+
+  $form['quick_reference'] = array(
+    '#type' => 'fieldset',
+    '#title' => t("Quick reference default"),
+    '#weight' => $form['actions']['#weight'],
+    '#collapsible' => TRUE,
+    '#collapsed' => FALSE,
+  );
+
+  $options = _commerce_pdm_get_product_display_types(TRUE);
+  if (!empty($options)) {
+    $form['quick_reference']['commerce_pdm_product_display_type'] = array(
+      '#type' => 'select',
+      '#title' => t("Type"),
+      '#description' => t("Choose the default product display type."),
+      '#default_value' => $default_type_new,
+      '#options' => $options,
+    );
+  }
+  else {
+    $form['quick_reference']['commerce_pdm_product_display_type'] = array(
+      '#markup' => t('The store does not yet contain any product display nodes.'),
+    );
+  }
+
+  $form['actions']['submit']['#submit'][] = 'commerce_pdm_form_commerce_product_ui_product_type_form_submit';
+}
+
+/**
+ * Submit callback for commerce_product_ui_product_type_form().
+ *
+ * @see commerce_pdm_form_commerce_product_ui_product_type_form_alter().
+ * Save default values for this product type.
+ */
+function commerce_pdm_form_commerce_product_ui_product_type_form_submit($form, &$form_state) {
+  $form_values = $form_state['values'];
+  // Get the product type machine name from the storage if existing
+  // See alter function for more information.
+  $product_type = !empty($form_state['#product_display_type_machine'])
+    ? $form_state['#product_display_type_machine']
+    : $form_values['product_type']['type'];
+
+  variable_set('commerce_pdm_default_new_' . $product_type, $form_values['commerce_pdm_product_display_type']);
+}
+
+/**
+ * Implements hook_form_FORM_ID_alter().
+ *
+ * Adding inputs to let the user add the created product as a
+ * reference to a Product Display Node.
+ */
+function commerce_pdm_form_commerce_product_ui_product_form_alter(&$form, &$form_state, $form_id) {
+
+  $display_type_options = _commerce_pdm_get_product_display_types(TRUE);
+
+  $product_type_machine = $form_state['commerce_product']->type;
+
+  if (empty($display_type_options)) {
+
+    $form['quick_reference'] = array(
+      '#type' => 'fieldset',
+      '#title' => t('Referenced by'),
+      '#weight' => $form['actions']['#weight'],
+      '#collapsible' => TRUE,
+      '#collapsed' => FALSE,
+    );
+    $form['quick_reference']['info'] = array(
+      '#markup' => t('The store does not yet contain any product display nodes to add this product to.'),
+    );
+
+  }
+  else {
+
+    // Store the value for the after_build function.
+    //$form['#commerce_pdm_reference_product_type'] = $product_type_machine;
+    $form['quick_reference'] = array(
+      '#type' => 'fieldset',
+      '#title' => t('Referenced by'),
+      '#description' => t('Changes made here are only temporary, the product must be saved for these changes to take effect.'),
+      '#weight' => $form['actions']['#weight'],
+      '#theme' => 'commerce_pdm_product_references_table',
+      '#collapsible' => TRUE,
+      '#collapsed' => FALSE,
+      '#tree' => TRUE,
+    );
+
+    if (!isset($form_state['commerce_product']->is_new)) {  // Editing an existing product
+      $referenced_from = _commerce_pdm_get_nodes_referencing($form_state['commerce_product']->product_id);
+      $existing_references = array();
+      if (!empty($referenced_from)) {
+        foreach ($referenced_from as $reference) {
+          $existing_references[] = $reference;
+        }
+        $form_state['#existing_references'] = $existing_references;
+      }
+
+      foreach ($existing_references as $key => $existing_reference) {
+        $form['quick_reference'][$key] = _commerce_pdm_get_product_reference_form_inputs($existing_reference);
+      }
+    }
+    // Make sure the Product Reference received from url gets attached in the
+    // new product, which will always be an existing Product Display node.
+    elseif (isset($_GET['pdid'])) {
+      $pdid = $_GET['pdid'];
+      $form_state['#existing_references'] = array($pdid);
+      $form['quick_reference'][0] = _commerce_pdm_get_product_reference_form_inputs($pdid);
+      $form['quick_reference'][0]['attach']['#default_value'] = 1;
+    }
+
+    // Add an empty row to use as template in JavaScript.
+    $form['quick_reference']['commerce_pdm_product_reference_row_template'] = _commerce_pdm_get_product_reference_form_inputs();
+
+    $form['quick_reference']['add_new_reference']['links'] = array(
+      'create_new' => array(
+        '#type' => 'link',
+        '#title' => t('New display node'),
+        '#href' => '',
+        '#attributes' => array('rel' => array('create_new')),
+      ),
+      'existing' => array(
+        '#type' => 'link',
+        '#title' => t('Existing display node'),
+        '#href' => '',
+        '#attributes' => array('rel' => array('use_existing')),
+      ),
+    );
+
+    $default_type_new = variable_get('commerce_pdm_default_new_' . $product_type_machine, NULL);
+
+    $form['quick_reference']['add_new_reference']['actions'] = array(
+      'commerce_pdm_product_display_type' => array(
+        '#type' => 'select',
+        '#title' => t("Type:"),
+        '#options' => $display_type_options,
+        '#default_value' => $default_type_new ? $default_type_new : '',
+        '#prefix' => '<div class="commerce-pdm-product-form-reference-add-actions add-action hidden"><div class="actions"><div class="add-new">',
+      ),
+      'commerce_pdm_product_display_title' => array(
+        '#type' => 'textfield',
+        '#title' => t("Title of new display node:"),
+        '#suffix' => '</div>',
+      ),
+      'commerce_pdm_product_display_existing' => array(
+        '#type' => 'textfield',
+        '#title' => t("Display node ID:"),
+        '#autocomplete_path' => 'commerce_pqr/autocomplete',
+        '#default_value' => '',
+        '#prefix' => '<div class="existing add-action">',
+      ),
+      'commerce_pdm_product_display_add' => array(
+        '#type' => 'link',
+        '#title' => t('Add'),
+        '#href' => '',
+        '#attributes' => array('class' => array('add')),
+        '#prefix' => '</div>',
+      ),
+      'commerce_pdm_product_display_cancel' => array(
+        '#type' => 'link',
+        '#title' => t('Cancel'),
+        '#href' => '',
+        '#attributes' => array('class' => array('cancel')),
+        '#suffix' => '</div></div>',
+      ),
+    );
+
+    // Add JavaScript used by form.
+    $form['#after_build'] = array('_commerce_pdm_product_form_reference_attach');
+
+    //$form['#validate'][] = 'commerce_pdm_product_form_reference_validate';
+    $form['actions']['submit']['#submit'][] = 'commerce_pdm_product_form_reference_submit';
+
+  }
+}
+
+
+/**
+ * Validate callback for commerce_product_ui_product_form().
+ *
+ * @see commerce_pdm_form_commerce_product_ui_product_form_alter()
+ */
+function commerce_pdm_product_form_reference_validate(&$form, &$form_state) {
+
+}
+
+/**
+ * Submit callback for commerce_product_ui_product_form().
+ *
+ * @see commerce_pdm_form_commerce_product_ui_product_form_alter().
+ * Add a reference to the created product to either a new node or an existing one.
+ */
+function commerce_pdm_product_form_reference_submit(&$form, &$form_state) {
+
+  $product_id = $form_state['build_info']['args'][0]->product_id;
+
+  foreach ($form_state['input']['quick_reference'] as $element) {
+    if (isset($element['title']) && !empty($element['title'])) {
+
+      if ($element['attach'] xor $element['deleted']) {
+
+        if ($element['new_type'] != FALSE) {
+          $node = _commerce_pdm_create_display_node($element['new_type'], $element['title']);
+        }
+        else {
+          $node = node_load($element['nid']);
+        }
+
+        $reference_field_name = _commerce_pdm_get_node_reference_field_name($node);
+        $field_language = field_language('node', $node, $reference_field_name);
+        if ($element['deleted'] == TRUE) {
+          foreach ($node->{$reference_field_name}[$field_language] as $field_value_key => $field_value) {
+            if ($field_value['product_id'] == $product_id) {
+              array_splice($node->{$reference_field_name}[$field_language], $field_value_key, 1);
+              break;
+            }
+          }
+        }
+        else {
+          if (!isset($node->{$reference_field_name}[$field_language])) {
+            $node->{$reference_field_name}[$field_language] = array();
+          }
+          $node->{$reference_field_name}[$field_language][] = array('product_id' => $product_id);
+        }
+
+        node_save($node);
+
+      }
+    }
+  }
+}
+
+/**
+ *  Delete related variables from the database.
+ */
+function commerce_pdm_commerce_product_type_delete($type, $skipreset) {
+  variable_del('commerce_pdm_default_new_' . $type['type']);
+}
+
+/**
+ *
+ */
+function theme_commerce_pdm_product_references_table($variables) {
+  $form_elements = $variables['form_elements'];
+  $header = array(t('Title'), t('Node ID'), t('Delete reference'));
+
+  $rows = array();
+  foreach(element_children($form_elements) as $row_key) {
+    if ($row_key !== 'add_new_reference') {
+      $row = array();
+      $row[] = drupal_render($form_elements[$row_key]['title']);
+      $row[] = drupal_render($form_elements[$row_key]['nid']);
+      $row[] = drupal_render($form_elements[$row_key]['attach'])
+        . drupal_render($form_elements[$row_key]['delete'])
+        . drupal_render($form_elements[$row_key]['undo_delete'])
+        . drupal_render($form_elements[$row_key]['deleted'])
+        . drupal_render($form_elements[$row_key]['new_type']);
+
+      $row_classes = ($row_key === 'commerce_pdm_product_reference_row_template' ? array('hidden reference-row-template') : array());
+      $rows[] = array('data' => $row, 'class' => $row_classes);
+    }
+  }
+
+  $row = array();
+  $row[] = '<div class="commerce-pdm-product-form-reference-add-links">';
+  $row[0] .= t('Add a reference to:') . '&nbsp;&nbsp;';
+  $row[0] .= drupal_render($form_elements['add_new_reference']['links']['create_new']);
+  $row[0] .= '&nbsp;&nbsp;&#124;&nbsp;&nbsp;';
+  $row[0] .= drupal_render($form_elements['add_new_reference']['links']['existing']);
+  $row[0] .= '</div>';
+  $row[0] .= drupal_render($form_elements['add_new_reference']['actions']);
+  $row[0] .= '<div class="commerce-pdm-product-form-reference-error-message" style="display:none;"></div>';
+  $row[0] = array('data' => $row[0], 'colspan' => 3);
+  $rows[] = array('data' => $row, 'class' => array('add-new'));
+
+  $output = theme('table', array('header' => $header, 'rows' => $rows, 'attributes' => array('id' => 'commerce_pdm_product_referenced_by')));
+  return $output;
+}
+
+
+
+/**
+ *
+ */
+function _commerce_pdm_get_product_reference_form_inputs($existing_reference = '') {
+  if ($existing_reference != '') {
+    $node_obj = db_query('SELECT n.title FROM {node} n WHERE nid = :nid', array(':nid' => $existing_reference))->fetchObject();
+    $node_title = $node_obj->title;
+  }
+  else {
+    $node_title = '';
+  }
+
+  $inputs = array(
+    // If this is a new reference that will be attached to a reference field.
+    'attach' => array(
+      '#type' => 'hidden',
+      '#default_value' => 0,
+      '#attributes' => array(
+        'class' => array('commerce-pdm-reference-attach'),
+      ),
+    ),
+    // The title of the node or the node to be created.
+    'title' => array(
+      '#type' => 'textfield',
+      '#value' => $node_title,
+      '#default_value' => $node_title,
+      '#attributes' => array(
+        'class' => array('commerce-pdm-reference-title'),
+        'readonly' => 'readonly',
+      )
+    ),
+    // The node ID of the node, this will be set to New if the node is to be created.
+    'nid' => array(
+      '#type' => 'textfield',
+      '#value' => $existing_reference,
+      '#default_value' => $existing_reference,
+      '#attributes' => array(
+        'class' => array('commerce-pdm-reference-nid'),
+        'val' => $existing_reference, // Just for the JavaScript check.
+        'readonly' => 'readonly',
+      ),
+    ),
+    // The delete link.
+    'delete' => array(
+      '#type' => 'link',
+      '#title' => t('Delete'),
+      '#href' => '',
+      '#attributes' => array(
+        'class' => array('commerce-pdm-reference-delete')
+      ),
+    ),
+    // The undo delete link.
+    'undo_delete' => array(
+      '#type' => 'link',
+      '#title' => t('Undo delete'),
+      '#href' => '',
+      '#attributes' => array(
+        'class' => array('commerce-pdm-reference-undo-delete', 'hidden'),
+      ),
+    ),
+    // If the reference to this product should be removed from the node.
+    'deleted' => array(
+      '#type' => 'hidden',
+      '#default_value' => 0,
+      '#attributes' => array(
+        'class' => array('commerce-pdm-reference-deleted')
+      ),
+    ),
+    // The node type to create the new node of.
+    'new_type' => array(
+      '#type' => 'hidden',
+      '#default_value' => 0,
+      '#attributes' => array(
+        'class' => array('commerce-pdm-reference-new-type')
+      ),
+    ),
+  );
+
+  return $inputs;
+}
+
+/**
+ * Helper function to see witch node types are valid product display node types.
+ *
+ * @param $json_format
+ *   If every element in the returned array should be keyed by display
+ *   nodes bundle name. This is for the product_display_type select box in
+ *   the form.
+ *
+ * @return
+ *   An array of elements containing machine_name => human name.
+ */
+function _commerce_pdm_get_product_display_types($json_format) {
+
+  $fields = array();
+
+  $product_reference_fields = _commerce_pdm_get_product_reference_fields();
+
+  // Only create output if product reference fields where found.
+  if (!empty($product_reference_fields)) {
+
+    $select_node_bundles = db_select('field_config_instance', 'fci');
+    $select_node_bundles->join('node_type', 'nt', 'nt.type = fci.bundle');
+    $select_node_bundles
+      ->fields('fci', array('bundle'))
+      ->fields('nt', array('name'));
+
+    $conditions = db_or();
+    foreach ($product_reference_fields as $field_name) {
+      $conditions->condition('fci.field_name', $field_name);
+    }
+    $select_node_bundles->condition($conditions);
+
+    $select_node_bundles_result = $select_node_bundles->execute();
+
+    foreach ($select_node_bundles_result as $bundle) {
+      $fields[$bundle->bundle] = $bundle->name;
+    }
+
+  }
+
+  $output = array();
+
+  foreach ($fields as $bundle => $bundle_name) {
+    if ($json_format) {
+      $output[$bundle] = $bundle_name;
+    }
+    else {
+      $output[] = array('machine_name' => $bundle, 'name' => $bundle_name);
+    }
+  }
+
+  return $output;
+}
+
+/**
+ * Helper function to return all product reference fields in the drupal installation.
+ */
+ function _commerce_pdm_get_product_reference_fields() {
+  $product_reference_fields = array();
+  foreach (field_info_fields() as $field) {
+    // Do not include the commerce_product field, why?
+    if ($field['type'] == 'commerce_product_reference' && $field['field_name'] != 'commerce_product') {
+      $product_reference_fields[] = $field['field_name'];
+    }
+  }
+  return $product_reference_fields;
+}
+
+/**
+ * Get the NID's of a nodes referencing to a product.
+ *
+ * If no node is referencing to it, return an empty array.
+ */
+function _commerce_pdm_get_nodes_referencing($product_id) {
+  $product_fields = _commerce_pdm_get_product_reference_fields();
+  $entities = array();
+  foreach ($product_fields as $field) {
+    $result = db_query(
+      'SELECT entity_id FROM {field_data_' . $field . '} df WHERE df.' . $field . '_product_id = :pid',
+      array(
+        ':pid' => $product_id,
+      )
+    );
+
+    foreach ($result as $reference) {
+      $entities[] = $reference->entity_id;
+    }
+  }
+  return $entities;
+}
+
+/**
+ * Helper function to get the name of the product reference field in a node.
+ */
+function _commerce_pdm_get_node_reference_field_name($node) {
+  $field_name_out = FALSE;
+
+  foreach (_commerce_pdm_get_product_reference_fields() as $field_name) {
+    if (isset($node->{$field_name})) {
+      $field_name_out = $field_name;
+      break;
+    }
+  }
+
+  return $field_name_out;
+}
+
+/**
+ * Menu callback; Retrieve a JSON object containing autocomplete suggestions.
+ *
+ * Return titles of existing product display nodes.
+ */
+function _commerce_pdm_existing_displays_autocomplete($typed) {
+
+  $output = array();
+  $product_display_types = _commerce_pdm_get_product_display_types(FALSE);
+
+  if (!empty($product_display_types)) {
+
+    $query_conditions = db_or();
+    foreach ($product_display_types as $display_type) {
+      $query_conditions->condition('n.type', $display_type['machine_name']);
+    }
+    $query = db_select('node', 'n')
+      ->fields('n', array('nid', 'title', 'type'))
+      ->condition($query_conditions)
+      ->condition('n.title', '%' . $typed . '%', 'LIKE')
+      ->addTag('node_access');
+
+    $query_result = $query->execute();
+
+    foreach ($query_result as $result) {
+      $output[$result->nid] = $result->title . ' (' . $result->type . ')';
+    }
+
+  }
+
+  drupal_json_output($output);
+}
+
+/**
+ * Ajax callback function returning information about a node.
+ *
+ * @param nid
+ *  The node ID of whitch I should return information about.
+ *
+ * @return
+ *  Return the results through drupal_json_output().
+ */
+function _commerce_pdm_get_node_info($nid) {
+  $result = array();
+
+  if($node = node_load($nid)) {
+    $field_name = _commerce_pdm_get_node_reference_field_name($node);
+    if (!_commerce_pdm_get_number_reference_values_allowed($node, count($node->{$field_name}[LANGUAGE_NONE]) + 1)) {
+      $result['success'] = FALSE;
+      $result['message'] = 'node_full';
+    }
+    else {
+      $result['success'] = TRUE;
+      $result['data']['title'] = $node->title;
+      $result['data']['nid'] = $node->nid;
+    }
+  }
+  else {
+    $result['success'] = FALSE;
+    $result['message'] = 'not_found';
+  }
+
+  return drupal_json_output($result);
+}
+
+/**
+ * Helper function to see if the specified number of values is allowed to exist
+ * in the specified node's product reference field.
+ */
+function _commerce_pdm_get_number_reference_values_allowed($node, $num_values) {
+  $node = is_object($node) ? $node : node_load($node);
+  $field_name = _commerce_pdm_get_node_reference_field_name($node);
+  $allowed_values = _commerce_pdm_get_num_allowed_references($node);
+
+  if (isset($node->{$field_name}[LANGUAGE_NONE])) {
+    if ($allowed_values != -1 && $num_values > $allowed_values) {
+      return FALSE;
+    }
+  }
+
+  return TRUE;
+}
+
+/**
+ * Returns the maximum number of values the product reference field in the
+ * specified node can contain.
+ */
+function _commerce_pdm_get_num_allowed_references($node) {
+  $node = is_object($node) ? $node : node_load($node);
+  $field_name = _commerce_pdm_get_node_reference_field_name($node);
+  $field_settings = field_info_field($field_name);
+  return (int) $field_settings['cardinality'];
+}
+
+/**
+ * Creates a display node and returns the result as a json object.
+ *
+ * @param type
+ *  The node type of whitch to create a node from.
+ *
+ * @param title
+ *  Set the title of the new node to this.
+ *
+ * @return
+ *  Return the results through drupal_json_output().
+ */
+function _commerce_pdm_create_display_node($type, $title) {
+  global $user;
+
+  $node = new stdClass();
+  $node->is_new = TRUE;
+  $node->type = $type;
+
+  // Prepare the object with the bundle default settings
+  node_object_prepare($node);
+
+  // Additional entity properties
+  $node->uid = $user->uid;
+  $node->title = $title;
+  $node->format = filter_fallback_format();
+
+  node_save($node);
+
+  // Attach fields to it.
+  field_attach_load('node', array($node->nid => $node));
+
+  return $node;
+}
+
+/**
+ * Add JavaScript and CSS used by the product reference table in the product form.
+ */
+function _commerce_pdm_product_form_reference_attach($form_element) {
+  drupal_add_js(drupal_get_path('module', 'commerce_pdm') . '/commerce_pdm_product_form_reference.js');
+  drupal_add_css(drupal_get_path('module', 'commerce_pdm') . '/commerce_pdm_product_form_reference.css');
+
+  // Add translated messages for the product reference table.
+  drupal_add_js(array(
+    'commerce_pdm_product_form' => array(
+      'already_has_reference' => t('The product is already referenced by the specified display node.'),
+      'node_not_found' => t('Could not find any node with the specified node ID.'),
+      'title_missing' => t('You have to enter a title for the new display node.'),
+      'not_created' => t('The new display node could not be created.'),
+      'node_full' => t('The display node cannot reference to more products, limit reached.'),
+      'added_new' => t('Added!'),
+      'added_existing' => t('Added!'),
+    )
+  ), 'setting');
+
+  return $form_element;
+}

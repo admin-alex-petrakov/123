@@ -1,0 +1,53 @@
+Commerce (Product Display Manager)
+
+7.x-1.x, 2013-03-26
+------------------------------
+
+* Added: explicit delta queried from the product reference field.
+* Fixed: Query implicitly filters product nodes without a product references.
+* Issue #1323376 by netsensei: refactored the query generating the product/displays list to cater for multiple display types. Contains an overhaul of the filter logic and a new filter Product display type
+* Issue #1337522 by joachim: labels and titles should be in sentence case
+* Issue #1426350 by netsensei: unprepared node object ignores any bundle defaults (promote, i18n,...)
+* By netsensei: refactoring the query which retrieves products on the node/x/products tab of a product display
+* Issue #1418736 by Denes.Szabo: PDM overwrites #after_build property on the commerce_pdm_product_display_manager_form.
+* Issue #1758372 by netsensei: Faulty field language assignment breaks product references in the Quick reference widget
+* Issue #1679286 by netsensei: Fix faulty form tampering which breaks product revisioning on product edit/create
+* Issue #1467764 by netsensei: Fixed issue where incorrect field language seemingly breaks drag-n-drop of display manager
+* Issue #1220286 by Denes.Szabo: Fix products referenced by a translated product display being retrieved incorrectly
+* Issue #1287176 by GiorgosK: removed unnecessary check_plain
+* Issue #1536842 by TheEdonian: Fixed Cloning a product via the display manager gives errors
+* Issue #1323892 by joachim: Improved UI text when referencing displays from a product edit form
+* Issue #1239368 by superstar: corrected permission in commerce_pdm_access_products_tab from "access content" to "access product display manager"
+
+7.x-1.x, 2012-01-21
+------------------------------
+Issue #1239368 by superstar: corrected permission in commerce_pdm_access_products_tab from "access content" to "access product display manager"
+
+7.x-1.x, 2011-07-05
+------------------------------
+#1176966 by Nylin: Fixed an exception thrown when no display node types exist.
+#1183620 by Nylin: Fixed an issue where the products tab didnt's show the node's products in order.
+
+7.x-1.x, 2011-06-08
+------------------------------
+#1178166: Added a redirect back to the display manager after deletion or editing.
+
+7.x-1.x, 20111-05-02
+------------------------------
+#1170662: Added "Products" tab to Product Display Node.
+
+7.x-1.x, 2011-05-27
+------------------------------
+#1170728: Added a dedicated product display manager page.
+#1168500 by rfay: Use the product title as node title if left blank.
+#1168488 by rfay: Minor tweaks to info file; remove cruft file.
+
+7.x-1.x, 2011-05-20
+------------------------------
+by Nylin: Added ability to reference from edit form.
+
+
+7.x-1.x, 2011-05-XX
+------------------------------
+by Nylin: Renamed files and functions to reflect the new name of the module.
+#1161072 by Nylin: Added default settings for product types.

@@ -1,0 +1,27 @@
+#commerce_pdm_product_display_manager tr.display-node {
+  font-weight: bold;
+  border-top: 1px solid #7f7f7f;
+}
+
+#commerce_pdm_product_display_manager tr.display-node.orphans {
+  font-weight: bold;
+  font-style: italic;
+  border-top: 3px solid black;
+
+}
+
+#commerce_pdm_product_display_manager tr.display-node.orphans td {
+  opacity:0.75;
+}
+
+#commerce_pdm_product_display_manager tr.display-node.first {
+  border-top: 0;
+}
+
+#commerce_pdm_product_display_manager tr.product-orphan {
+  font-style: italic;
+}
+
+#commerce_pdm_product_display_manager tr.product-orphan td {
+  opacity:0.75;
+}
