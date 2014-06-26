@@ -25,7 +25,7 @@ ul.nice-menu li {
 ul.nice-menu a {
   display: block;
   /*Default to Blue, but override as necessary*/
-  color: #027ac6;
+  color: yellow;
 }
 
 ul.nice-menu ul,
@@ -120,6 +120,6 @@ ul.nice-menu li.menuparent ul iframe,
   left: 0;
   z-index: -1;
   filter: mask();
-  width: 200px;
+  width: 20px;
   height: 20px;
 }

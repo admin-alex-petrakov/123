@@ -416,8 +416,9 @@ td{
   width: 100px;
   height: 145px;
   background: url('images/fonar2.png');
-  right: 27%;
-  bottom: 3%;
+  right: -3%;
+  bottom: -48px;
+  z-index: 11;
 }
 #main-menu > ul.menu{
   font-size: 14px;
@@ -565,7 +566,7 @@ td{
     position: absolute;
     top: 106px;
     width: 6%;
-    z-index: 99;
+    z-index: 10;
 }
 #nav-slider .nav-previous:hover, 
 #nav-slider .nav-next:hover {

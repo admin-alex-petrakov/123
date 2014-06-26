@@ -197,9 +197,11 @@
     </div>
 
     <div id="bottom" class="clearfix">
+	<header id="header" class="clearfix">
 	<div id="fonar2">
 		<?php $fonar=""; print $fonar; ?>
 	</div>
+	</header>
       <div class="copyright"><?php print t('Copyright'); ?> &copy; <?php echo date("Y"); ?>, <a href="<?php print $front_page; ?>"><?php print $site_name; ?></a></div>     
 	  <?php if (theme_get_setting('socialicon_display', 'impact_theme')): ?>
         <?php 
