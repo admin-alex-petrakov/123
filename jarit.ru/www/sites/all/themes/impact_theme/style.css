@@ -184,12 +184,11 @@ h1 {
 }
 h2 {
     font-size: 22px;
-    margin: .5em 0;
 }
 h3 {
     font-size: 22px;
     font-weight: bold;
-  margin: 0 0 0.8125em;
+    margin: 0 0 0.8125em;
 }
 h4 {
     font-size: 20px;
@@ -303,11 +302,10 @@ sub {
 }
 
 table {
-  margin: 0 0 1.5em;
-  width: 100%;
+  margin: 0 0 4em;
   border:1px solid #000000;
   border-right:none;
-  background:#000000;
+  width: 100%;
 }
 
 th {
@@ -322,9 +320,12 @@ tr{
 }
 
 td{
-  padding:5px 10px;
-  border-top:1px solid #000000;
-  border-right:1px solid #000000;
+  padding:4px 14px;
+  border-width: 7px;
+  border-image:linear-gradient(-45deg, black 30%, #cc0202, black 70%)  50;
+  text-transform: uppercase;
+  font-family: mistral;
+  font-size: 18px;
 }
 
 /* clearfix hack */
@@ -401,6 +402,15 @@ td{
   margin: 0 auto 2px;
   width: 100%;
   background: url('images/menu_bg.png');
+}
+#dragon {
+  position: absolute;
+  width: 300px;
+  height: 131px;
+  background: url('images/dragon.png');
+  bottom: -25px;
+  left: 2%;
+  z-index: 11;
 }
 #fonar {
   position: absolute;
@@ -1381,10 +1391,8 @@ border-left: 1px solid; border-right: 1px solid; height: 40px; margin-left: -36p
 }
 
 .item-list .pager li {
-  background: #cfcfcf;
-  border-radius: 3px;
+  background: #000000;
   margin-right: 4px;
-  text-shadow: 1px 1px #fff;
 }
 
 /*-------------------------------------------*

@@ -17,7 +17,7 @@ ul.nice-menu,
 ul.nice-menu ul {
   list-style: none;
   padding: 0;
-  margin: -15px;
+  margin: -14px;
 }
 
 ul.nice-menu li {
@@ -34,7 +34,6 @@ ul.nice-menu a {
 ul.nice-menu ul {
   top: 1.8em;
   left: -1px; /* LTR */
-  border: 0;
   margin-right: 0; /* LTR */
 }
 
@@ -51,7 +50,7 @@ ul.nice-menu-right,
 ul.nice-menu-left,
 ul.nice-menu-right li,
 ul.nice-menu-left li {
-  width: 17.3em;
+  width: 17.125em;
 }
 
 /* VERTICAL menus where submenus pop RIGHT (default). */

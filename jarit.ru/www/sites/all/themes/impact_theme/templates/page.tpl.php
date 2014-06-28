@@ -178,6 +178,11 @@
   </div>
 
   <footer id="footer-bottom">
+  <header id="header" class="clearfix">
+	<div id="dragon">
+		<?php $dragon=""; print $dragon; ?>
+	</div>
+	</header>
     <div id="footer-area" class="clearfix">
       <?php if ($page['footer_first'] || $page['footer_second'] || $page['footer_third']): ?>
         <div id="footer-block-wrap" class="clearfix in<?php print (bool) $page['footer_first'] + (bool) $page['footer_second'] + (bool) $page['footer_third']; ?>">
