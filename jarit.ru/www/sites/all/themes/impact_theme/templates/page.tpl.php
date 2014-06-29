@@ -139,9 +139,9 @@
         $slide1_url = check_plain(theme_get_setting('slide1_url','impact_theme'));
         $slide2_url = check_plain(theme_get_setting('slide2_url','impact_theme'));
         $slide3_url = check_plain(theme_get_setting('slide3_url','impact_theme'));
-        $slide1_desc = check_markup(theme_get_setting('slide1_desc', 'impact_theme'), 'full_html'); 
-        $slide2_desc = check_markup(theme_get_setting('slide2_desc', 'impact_theme'), 'full_html'); 
-        $slide3_desc = check_markup(theme_get_setting('slide3_desc', 'impact_theme'), 'full_html'); 
+        $slide1_desc = check_markup(theme_get_setting('slide1_desc', 'impact_theme')); 
+        $slide2_desc = check_markup(theme_get_setting('slide2_desc', 'impact_theme')); 
+        $slide3_desc = check_markup(theme_get_setting('slide3_desc', 'impact_theme')); 
         ?>
         <div id="slider">
           <div id="slider-wrap">

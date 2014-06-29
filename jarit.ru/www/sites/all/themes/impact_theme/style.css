@@ -247,6 +247,9 @@ strong {
 cite, em, i {
   font-style: italic;
 }
+em {
+  display: none;
+}
 blockquote {
   font-family: Georgia, "Bitstream Charter", serif;
   font-style: italic;
@@ -693,9 +696,9 @@ td{
 #preface-area .block > h2,
 .region-content-top .block > h2,
 #footer-area .block > h2 {
-border-bottom: 1px solid #CCCCCC;
-color: rgb(38, 156, 203);
-font-size: 1.1em;
+border-bottom: 1px solid #fff;
+color: #fff;
+font-size: 18px;
 font-weight: bold;
 padding: .5em 0;
 margin-bottom: .5em;
@@ -925,7 +928,7 @@ padding: 0 0 10px; position: relative; top: 12px; /* Offsets the negative margin
 
 .filter-wrapper { top: 0; padding: 1em 0 0.2em;
 -khtml-border-radius-topright: 0; -khtml-border-radius-topleft: 0; -moz-border-radius-topright: 0; -moz-border-radius-topleft: 0;
--webkit-border-top-left-radius: 0; -webkit-border-top-right-radius: 0; border-top-left-radius: 0; border-top-right-radius: 0; }
+-webkit-border-top-left-radius: 0; -webkit-border-top-right-radius: 0; border-top-left-radius: 0; border-top-right-radius: 0; display: none;}
 
 .filter-help a { font-size: 0.857em; padding: 2px 20px 0; }
 
@@ -940,7 +943,7 @@ fieldset.collapsed { background: transparent; -khtml-border-radius: 0; -moz-bord
 fieldset legend { background: #dbdbdb; border: 1px solid #ccc; border-bottom: none; display: block; height: 2em;
 left: -1px; line-height: 2; padding: 0; position: absolute; text-indent: 10px; text-shadow: 0 1px 0 #fff; top: -12px; width: 100%;
 -khtml-border-radius-topleft: 4px; -moz-border-radius-topleft: 4px; -webkit-border-top-left-radius: 4px; border-top-left-radius: 4px; 
--khtml-border-radius-topright: 4px; -moz-border-radius-topright: 4px; -webkit-border-top-right-radius: 4px; border-top-right-radius: 4px; }
+-khtml-border-radius-topright: 4px; -moz-border-radius-topright: 4px; -webkit-border-top-right-radius: 4px; border-top-right-radius: 4px; display: none;}
 
 fieldset.collapsed legend { -khtml-border-radius: 4px; -moz-border-radius: 4px; -webkit-border-radius: 4px; border-radius: 4px; }
 
@@ -956,7 +959,7 @@ textarea { line-height: 1.5; }
 
 textarea.form-textarea, select.form-select { padding: 4px; }
 
-input.form-text, textarea.form-textarea, select.form-select { border: 1px solid #ccc; width: 85%; }
+input.form-text, textarea.form-textarea, select.form-select { background: black; border: 1px solid #cc0202; width: 85%; }
 
 .password-suggestions ul li { margin-left: 1.2em; }
 
@@ -997,12 +1000,13 @@ border-top-left-radius: 4px; border-top-right-radius: 4px; }
 -khtml-border-bottom-left-radius: 4px; -khtml-border-bottom-right-radius: 4px; -moz-border-radius-bottomleft: 4px;
 -moz-border-radius-bottomright: 4px; -webkit-border-bottom-left-radius: 4px; -webkit-border-bottom-right-radius: 4px;
 border-bottom-left-radius: 4px; border-bottom-right-radius: 4px; }
+.resizable-textarea .grippie { display: none; }
 
 /* Comment form */
 
-.comment-form label { float: left; font-size: 0.929em; }
+.comment-form label { /*float: left; font-size: 0.929em;*/ display: none; }
 
-.comment-form input, .comment-form .form-select { margin: 0; 
+.comment-form input .comment-form .form-select { margin: 0; 
 -khtml-border-radius: 4px; -moz-border-radius: 4px; -webkit-border-radius: 4px; border-radius: 4px; }
 
 .comment-form .form-type-textarea label { float: none; }
@@ -1011,6 +1015,7 @@ border-bottom-left-radius: 4px; border-bottom-right-radius: 4px; }
 .comment-form .form-radios,
 .comment-form .form-type-checkbox,
 .comment-form .form-select { margin-bottom: 10px; overflow: hidden; }
+.comment-form .form-item a { display: none; }
 
 .comment-form .form-type-checkbox,
 .comment-form .form-radios { margin-left: 120px; }
@@ -1021,7 +1026,7 @@ border-bottom-left-radius: 4px; border-bottom-right-radius: 4px; }
 .comment-form input.form-file { width: auto; }
 
 .comment-form .form-text { display: block; margin: 0; width: 100%;
--moz-box-sizing: border-box; -webkit-box-sizing: border-box; box-sizing: border-box; }
+-moz-box-sizing: border-box; -webkit-box-sizing: border-box; box-sizing: border-box; background: black;}
 
 .comment-form .form-item .description { font-size: 0.786em; line-height: 1.2; margin-left: 120px; }
 
@@ -1030,7 +1035,7 @@ border-bottom-left-radius: 4px; border-bottom-right-radius: 4px; }
 .comment-form .form-textarea { -khtml-border-radius-topleft: 4px; -khtml-border-radius-topright: 4px;
 -moz-border-radius-topleft: 4px; -moz-border-radius-topright: 4px;
 -webkit-border-top-left-radius: 4px; -webkit-border-top-right-radius: 4px;
-border-top-left-radius: 4px; border-top-right-radius: 4px; background: black; border-color: #cc0202}
+border-top-left-radius: 4px; border-top-right-radius: 4px; background: black; border-color: #cc0202; }
 
 .comment-form fieldset.filter-wrapper .fieldset-wrapper,
 .comment-form .text-format-wrapper .form-item { margin-top: 0; margin-bottom: 0; }
@@ -1043,7 +1048,7 @@ border-top-left-radius: 4px; border-top-right-radius: 4px; background: black; bo
 
 #comment-body-add-more-wrapper .form-type-textarea label { margin-bottom: 0.4em; }
 
-#edit-actions input { margin-right: 0.6em; border-color: #cc0202}
+#edit-actions input { margin-right: 0.6em; border-color: #cc0202; }
 
 /* Other Overrides */
 
@@ -1145,17 +1150,15 @@ font-size: .8em;
 }
 
 .links li a {
-  background-color: #E7E5E3;
-  color: #100100;
+  background-color: #cc0202;
+  color: #000000;
   padding: 4px 5px;
-  border-radius: 4px;
-  text-shadow: 1px 1px #fff;
   font-weight: normal;
 }
 
 .links li a:hover {
-  background-color: #D7D5D3;
-  color: #100101;
+  background-color: #cc0202;
+  color: yellow;
 }
 
 
