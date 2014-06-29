@@ -1,0 +1,49 @@
+<?php
+// $Id: flatcomments.module,v 1.7.2.2 2011/01/03 15:33:05 dragonwize Exp $
+
+/**
+ * @file
+ *  Make comments replies to the node, regardless of the reply link used.
+ */
+
+/**
+ * Implementation of hook_form_FORMID_alter().
+ */
+function flatcomments_form_node_type_form_alter(&$form, &$form_state, $form_id) {
+  // Add note about flatcomments to comment display description.
+  $form['comment']['comment_default_mode']['#description'] .= t(' <strong>Flatcomments enabled:</strong> Leave this box unchecked to force replies to be to the main post instead of other comments.');
+
+  $node_type = $form['#node_type']->type;
+
+  // Add option to remove reply link from comments.
+  $form['comment']['flatcomments_remove_reply_link'] = array(
+    '#type' => 'checkboxes',
+    '#title' => t('Links'),
+    '#default_value' => variable_get('flatcomments_remove_reply_link_' . $node_type, array()),
+    '#options' => array(
+      'reply' => t('Do not show a reply link on comments'),
+    ),
+  );
+}
+
+/**
+ * Implementation of hook_comment_presave().
+ */
+function flatcomments_comment_presave($comment) {
+  // Only affect new comments and comments set to be displayed flat.
+  $display_mode = (int)variable_get('comment_default_mode_' . str_replace('comment_node_', '', $comment->node_type), 0);
+  if (!$comment->cid && $display_mode === 0) {
+    // Set parent id to NULL to prevent threads.
+    $comment->pid = NULL;
+  }
+}
+
+/**
+ * Implementation of hook_comment_view_alter().
+ */
+function flatcomments_comment_view_alter(&$build) {
+  $show_reply_link = variable_get('flatcomments_remove_reply_link_' . $build['#node']->type, array());
+  if (isset($build['links']['comment']['#links']['comment-reply']) && !empty($show_reply_link)) {
+    unset($build['links']['comment']['#links']['comment-reply']);
+  }
+}

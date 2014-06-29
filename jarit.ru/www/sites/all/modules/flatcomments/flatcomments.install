@@ -1,0 +1,17 @@
+<?php
+// $Id: flatcomments.install,v 1.2.2.1 2010/10/08 19:57:32 dragonwize Exp $
+
+/**
+ * @file
+ * Install, update and uninstall functions for the flatcomments module.
+ */
+
+/**
+ * Implementation of hook_uninstall().
+ */
+function flatcomments_uninstall() {
+  // Delete settings from varible table.
+  db_delete('variable')
+    ->condition('name', 'flatcomments_%', 'LIKE')
+    ->execute();
+}
